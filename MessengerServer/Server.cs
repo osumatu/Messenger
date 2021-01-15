@@ -42,6 +42,12 @@ namespace MessengerServer
                     try
                     {
                         clientList.Add(username, clientSocket);
+                        // let users know someone is connected
+                        CommunicationHandler.SendOnlineUsers();
+
+                        Console.WriteLine(username + " Joined chat room ");
+                        HandleClient client = new HandleClient();
+                        client.StartClientThread(clientSocket, username);
                     }
                     catch (ArgumentException ae)
                     {
@@ -54,12 +60,6 @@ namespace MessengerServer
                     {
                         Console.WriteLine(ex);
                     }
-                    // let users know someone is connected
-                    CommunicationHandler.SendOnlineUsers();
-
-                    Console.WriteLine(username + " Joined chat room ");
-                    HandleClient client = new HandleClient();
-                    client.StartClientThread(clientSocket, username);
                 }
             }
             catch (Exception ex)
@@ -89,10 +89,10 @@ namespace MessengerServer
         TcpClient clientSocket;
         string clNo;
         int bytesRead;
-        public void StartClientThread(TcpClient inClientSocket, string clNo)
+        public void StartClientThread(TcpClient clientSocket, string clNo)
         {
-            clientSocket = inClientSocket;
-            clNo = clNo;
+            this.clientSocket = clientSocket;
+            this.clNo = clNo;
             Thread ctThread = new Thread(Communicate);
             ctThread.Start();
         }

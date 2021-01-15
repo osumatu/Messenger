@@ -9,12 +9,12 @@ namespace MessengerBase.Models
 {
     public class Package
     {
-        public User senderUser { get; set; }
-        public User receiverUser { get; set; }
-        public int packageType { get; set; }
-        public string context { get; set; }
+        public User SenderUser { get; set; }
+        public User ReceiverUser { get; set; }
+        public PackageTypeEnum PackageType { get; set; }
+        public string Context { get; set; }
 
-        private JsonSerializerSettings jsonSerializerSettings = new JsonSerializerSettings();
+        private readonly JsonSerializerSettings jsonSerializerSettings = new JsonSerializerSettings();
 
         public Package()
         {
@@ -24,13 +24,12 @@ namespace MessengerBase.Models
             jsonSerializerSettings.Formatting = Formatting.Indented;
         }
 
-
-        public Package(string message, User senderUser, User receiverUser, int packageType)
+        public Package(string message, User senderUser, User receiverUser, PackageTypeEnum packageType)
         {
-            context = message;
-            this.senderUser = senderUser;
-            this.receiverUser = receiverUser;
-            this.packageType = packageType;
+            Context = message;
+            this.SenderUser = senderUser;
+            this.ReceiverUser = receiverUser;
+            this.PackageType = packageType;
 
             // Set custom serializers as settings to be able to serialize IPAdress.
             jsonSerializerSettings.Converters.Add(new IPAddressConverter());
@@ -38,7 +37,7 @@ namespace MessengerBase.Models
             jsonSerializerSettings.Formatting = Formatting.Indented;
         }
 
-        public void sendPackage(NetworkStream stream)
+        public void SendPackage(NetworkStream stream)
         {
             string toSend = Serialize();
             try
@@ -85,24 +84,13 @@ namespace MessengerBase.Models
             string returnValue = Encoding.ASCII.GetString(encodedDataAsBytes);
             return returnValue;
         }
+    }
 
-
-        //TYPE1
-        public void sendMessage()
-        {
-            packageType = 1;
-        }
-        //TYPE2
-        public void connectionChanged()
-        {
-            packageType = 2;
-        }
-
-        //TYPE4
-        public void receiverOffline()
-        {
-            packageType = 4;
-
-        }
+    public enum PackageTypeEnum
+    {
+        Success,
+        Fail,
+        NewMessage,
+        UserConnectedDisconnected
     }
 }

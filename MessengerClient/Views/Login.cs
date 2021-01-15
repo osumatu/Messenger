@@ -15,19 +15,19 @@ namespace MessengerClient.Views
         {
             InitializeComponent();
             clientSocket = new TcpClient();
-            serverStream = default(NetworkStream);
+            serverStream = default;
         }
 
-        private void loginButton_Click(object sender, EventArgs e)
+        private void LoginButton_Click(object sender, EventArgs e)
         {
             if (Program.serverIp == null || Program.serverPort == -1)
             {
-                MessageBox.Show("Server is unavailable right now, please try again later.", "Error!");
+                MessageBox.Show("Configuration file is not set correctly.", "Error!");
                 Application.Exit();
             }
-            User user = new User(username.Text);
             try
             {
+                User user = new User(username.Text);
                 Program.user = user;
                 clientSocket = new TcpClient();
                 try
@@ -42,7 +42,10 @@ namespace MessengerClient.Views
                     Program.serverStream = serverStream;
 
                     Hide();
-                    MainWindow mw = new MainWindow();
+                    MainWindow mw = new MainWindow
+                    {
+                        Text = "Home - " + user.Username
+                    };
                     mw.Show();
                     mw.FormClosed += (s, ev) =>
                     {
@@ -82,19 +85,19 @@ namespace MessengerClient.Views
         private void Login_Load(object sender, EventArgs e)
         {
             clientSocket = new TcpClient();
-            serverStream = default(NetworkStream);
+            serverStream = default;
         }
 
         private void Login_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Enter)
-                loginButton_Click(sender, new EventArgs());
+                LoginButton_Click(sender, new EventArgs());
         }
 
-        private void username_KeyDown(object sender, KeyEventArgs e)
+        private void Username_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Enter)
-                loginButton_Click(sender, new EventArgs());
+                LoginButton_Click(sender, new EventArgs());
         }
     }
 }

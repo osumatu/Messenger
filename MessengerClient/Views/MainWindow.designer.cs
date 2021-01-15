@@ -183,8 +183,8 @@ namespace MessengerClient.Views
             this.messageTextBox.Name = "messageTextBox";
             this.messageTextBox.Size = new System.Drawing.Size(649, 70);
             this.messageTextBox.TabIndex = 4;
-            this.messageTextBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.messageTextBox_KeyDown);
-            this.messageTextBox.KeyUp += new System.Windows.Forms.KeyEventHandler(this.messageTextBox_KeyUp);
+            this.messageTextBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.MessageTextBox_KeyDown);
+            this.messageTextBox.KeyUp += new System.Windows.Forms.KeyEventHandler(this.MessageTextBox_KeyUp);
             // 
             // sendButton
             // 
@@ -196,7 +196,7 @@ namespace MessengerClient.Views
             this.sendButton.TabIndex = 5;
             this.sendButton.Text = "Send";
             this.sendButton.UseVisualStyleBackColor = true;
-            this.sendButton.Click += new System.EventHandler(this.sendButton_Click);
+            this.sendButton.Click += new System.EventHandler(this.SendButton_Click);
             // 
             // messages
             // 
@@ -212,7 +212,7 @@ namespace MessengerClient.Views
             this.messages.Size = new System.Drawing.Size(774, 475);
             this.messages.TabIndex = 4;
             this.messages.Text = "";
-            this.messages.TextChanged += new System.EventHandler(this.messages_TextChanged);
+            this.messages.TextChanged += new System.EventHandler(this.Messages_TextChanged);
             // 
             // tableLayoutPanel3
             // 
@@ -243,7 +243,7 @@ namespace MessengerClient.Views
             this.options.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             this.options.UseVisualStyleBackColor = true;
             this.options.Visible = false;
-            this.options.Click += new System.EventHandler(this.options_Click);
+            this.options.Click += new System.EventHandler(this.Options_Click);
             // 
             // MainWindow
             // 

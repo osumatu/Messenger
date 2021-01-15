@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 
@@ -12,15 +13,14 @@ namespace MessengerServer.Controllers
 
     public class CommunicationHandler
     {
-        public static bool sendMessage(string msg, string receiverName)
+        public static bool SendMessage(string message, TcpClient receiverClient)
         {
             try
             {
-                TcpClient broadcastSocket = (TcpClient)Server.clientList[receiverName];
-                NetworkStream broadcastStream = broadcastSocket.GetStream();
-                Byte[] broadcastBytes = null;
+                NetworkStream broadcastStream = receiverClient.GetStream();
+                byte[] broadcastBytes = null;
 
-                broadcastBytes = Encoding.ASCII.GetBytes(msg);
+                broadcastBytes = Encoding.ASCII.GetBytes(message);
 
                 broadcastStream.Write(broadcastBytes, 0, broadcastBytes.Length);
                 broadcastStream.Flush();
@@ -32,21 +32,19 @@ namespace MessengerServer.Controllers
             }
             return true;
         }
-        public static void sendOnlineUsers()
+        public static void SendOnlineUsers()
         {
-            List<string> users = new List<string>();
-            foreach (DictionaryEntry entry in Server.clientList)
-            {
-                users.Add(entry.Key.ToString());
-            }
+            List<string> users = ((ICollection<string>)Server.clientList.Keys).ToList();
             string context = GeneralMethods.Serialize(users);
-            Package pck = new Package();
-            pck.connectionChanged();
-            pck.context = context;
-            context = pck.Serialize();
-            broadcast(context, "server");
+            Package package = new Package
+            {
+                PackageType = PackageTypeEnum.UserConnectedDisconnected,
+                Context = context
+            };
+            context = package.Serialize();
+            Broadcast(context);
         }
-        public static void broadcast(string msg, string senderUsername)
+        public static void Broadcast(string package)
         {
             try
             {
@@ -55,9 +53,9 @@ namespace MessengerServer.Controllers
                     TcpClient broadcastSocket;
                     broadcastSocket = (TcpClient)Item.Value;
                     NetworkStream broadcastStream = broadcastSocket.GetStream();
-                    Byte[] broadcastBytes = null;
+                    byte[] broadcastBytes = null;
 
-                    broadcastBytes = Encoding.ASCII.GetBytes(msg);
+                    broadcastBytes = Encoding.ASCII.GetBytes(package);
 
                     broadcastStream.Write(broadcastBytes, 0, broadcastBytes.Length);
                     broadcastStream.Flush();
@@ -67,20 +65,17 @@ namespace MessengerServer.Controllers
             catch (InvalidOperationException ex)
             {
                 Console.WriteLine(ex);
-                userDisconnected(senderUsername);
             }
             catch (IOException ex)
             {
                 Console.WriteLine(ex);
-                userDisconnected(senderUsername);
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex);
-                userDisconnected(senderUsername);
             }
         }
-        public static void userDisconnected(TcpClient client)
+        public static void UserDisconnected(TcpClient client)
         {
             Hashtable temptable = new Hashtable();
             foreach (DictionaryEntry tcp in Server.clientList)
@@ -91,20 +86,7 @@ namespace MessengerServer.Controllers
                     Console.WriteLine(String.Format("User {0} has disconnected.", tcp.Key));
             }
             Server.clientList = temptable;
-            sendOnlineUsers();
-        }
-        public static void userDisconnected(string uname)
-        {
-            Hashtable temptable = new Hashtable();
-            foreach (DictionaryEntry tcp in Server.clientList)
-            {
-                if (!tcp.Key.Equals(uname))
-                    temptable.Add(tcp.Key, tcp.Value);
-                else
-                    Console.WriteLine(String.Format("User {0} has disconnected.", tcp.Key));
-            }
-            Server.clientList = temptable;
-            sendOnlineUsers();
+            SendOnlineUsers();
         }
     }
 }

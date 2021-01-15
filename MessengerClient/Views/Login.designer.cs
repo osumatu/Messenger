@@ -40,7 +40,7 @@
             this.username.Name = "username";
             this.username.Size = new System.Drawing.Size(116, 23);
             this.username.TabIndex = 0;
-            this.username.KeyDown += new System.Windows.Forms.KeyEventHandler(this.username_KeyDown);
+            this.username.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Username_KeyDown);
             // 
             // label1
             // 
@@ -62,7 +62,7 @@
             this.loginButton.TabIndex = 2;
             this.loginButton.Text = "Login";
             this.loginButton.UseVisualStyleBackColor = true;
-            this.loginButton.Click += new System.EventHandler(this.loginButton_Click);
+            this.loginButton.Click += new System.EventHandler(this.LoginButton_Click);
             // 
             // Login
             // 

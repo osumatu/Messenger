@@ -12,9 +12,9 @@ namespace MessengerClient.Views
 {
     public partial class MainWindow : Form
     {
-        List<Chat> chats = new List<Chat>();
+        readonly List<Chat> chats = new List<Chat>();
         List<string> onlineUsers = new List<string>();
-        TcpClient clientSocket = Program.clientSocket;
+        readonly TcpClient clientSocket = Program.clientSocket;
         NetworkStream serverStream = Program.serverStream;
         string readData = null;
         int bytesRead;
@@ -23,32 +23,34 @@ namespace MessengerClient.Views
         public MainWindow()
         {
             InitializeComponent();
-            drawOnlineUsers();
-            drawChatPage();
+            DrawOnlineUsers();
+            DrawChatPage();
 
             readData = "Conected to Chat Server";
-            Thread ctThread = new Thread(getPackage);
+            Thread ctThread = new Thread(GetPackage);
             ctThread.Start();
             Program.activeThreads.Add(ctThread);
 
         }
-        void drawOnlineUsers()
+        void DrawOnlineUsers()
         {
             panel1.RowCount = 0;
             int locationCount = 0;
-            var activeChat = getActiveChat();
+            var activeChat = GetActiveChat();
 
             #region DRAW ONLINE USERS
             if (onlineUsers.Count > 0)
             {
                 foreach (string username in onlineUsers)
                 {
-                    if (username.Equals(Program.user.username))
+                    if (username.Equals(Program.user.Username))
                         continue;
                     User user = new User(username);
-                    Chat chat = new Chat();
-                    chat.client1 = Program.user;
-                    chat.client2 = user;
+                    Chat chat = new Chat
+                    {
+                        Client1 = Program.user,
+                        Client2 = user
+                    };
                     chats.Add(chat);
 
                     #region components
@@ -77,14 +79,14 @@ namespace MessengerClient.Views
                     statusLabel.MouseLeave += (s, e) =>
                     {
                         if (activeChat != null)
-                            if (activeChat.client2 != null)
-                                if (((Label)s).Parent.Name.Equals(activeChat.client2.username))
+                            if (activeChat.Client2 != null)
+                                if (((Label)s).Parent.Name.Equals(activeChat.Client2.Username))
                                     return;
                         ((Label)s).Parent.BackColor = Color.FromArgb(33, 33, 33);
                     };
                     statusLabel.MouseClick += (s, e) =>
                     {
-                        mouseClick(s, e, user);
+                        MouseClick(s, e);
                     };
 
                     // 
@@ -96,22 +98,22 @@ namespace MessengerClient.Views
                     nicknamelabel.Name = "nicknamelabel";
                     nicknamelabel.Size = new System.Drawing.Size(55, 13);
                     nicknamelabel.TabIndex = 4;
-                    nicknamelabel.Text = user.username;
+                    nicknamelabel.Text = user.Username;
                     nicknamelabel.MouseEnter += (s, e) =>
                     {
                         ((Label)s).Parent.BackColor = Color.FromArgb(66, 66, 66);
                     };
                     nicknamelabel.MouseLeave += (s, e) =>
                     {
-                        if (v != null)
-                            if (activeChat.client2 != null)
-                                if (((Label)s).Parent.Name.Equals(activeChat.client2.username))
+                        if (activeChat != null)
+                            if (activeChat.Client2 != null)
+                                if (((Label)s).Parent.Name.Equals(activeChat.Client2.Username))
                                     return;
                         ((Label)s).Parent.BackColor = Color.FromArgb(33, 33, 33);
                     };
                     nicknamelabel.MouseClick += (s, e) =>
                     {
-                        mouseClick(s, e, user);
+                        MouseClick(s, e);
                     };
 
 
@@ -131,14 +133,14 @@ namespace MessengerClient.Views
                     userPP.MouseLeave += (s, e) =>
                     {
                         if (activeChat != null)
-                            if (activeChat.client2 != null)
-                                if (((PictureBox)s).Parent.Name.Equals(activeChat.client2.username))
+                            if (activeChat.Client2 != null)
+                                if (((PictureBox)s).Parent.Name.Equals(activeChat.Client2.Username))
                                     return;
                         ((PictureBox)s).Parent.BackColor = Color.FromArgb(33, 33, 33);
                     };
                     userPP.MouseClick += (s, e) =>
                     {
-                        mouseClick(s, e, user);
+                        MouseClick(s, e);
                     };
 
                     // 
@@ -168,7 +170,7 @@ namespace MessengerClient.Views
                     panel.Controls.Add(userPP);
                     panel.Controls.Add(statusLabel);
                     panel.Controls.Add(nicknamelabel);
-                    panel.Name = user.username;
+                    panel.Name = user.Username;
                     panel.Size = new System.Drawing.Size(205, 40);
                     panel.TabIndex = 6;
                     panel.MouseEnter += (s, e) =>
@@ -178,14 +180,14 @@ namespace MessengerClient.Views
                     panel.MouseLeave += (s, e) =>
                     {
                         if (activeChat != null)
-                            if (activeChat.client2 != null)
-                                if (((Panel)s).Name.Equals(activeChat.client2.username))
+                            if (activeChat.Client2 != null)
+                                if (((Panel)s).Name.Equals(activeChat.Client2.Username))
                                     return;
                         ((Panel)s).BackColor = Color.FromArgb(33, 33, 33);
                     };
                     panel.MouseClick += (s, e) =>
                     {
-                        mouseClick(s, e, user);
+                        MouseClick(s, e);
                     };
 
                     #endregion
@@ -213,34 +215,34 @@ namespace MessengerClient.Views
         /// <summary>
         /// Mouse Click event for online user list. Basically sets right chat pane for selected chat.
         /// </summary>
-        private void mouseClick(object s, EventArgs e, User user)
+        private new void MouseClick(object s, EventArgs e)
         {
             Control p = new Control(); ;
-            if (s is Label)
+            if (s is Label label)
             {
-                p = ((Label)s).Parent.Controls.Find("messagePanel", true)[0];
-                setActiveChat(new Chat(Program.user, new User(((Label)s).Name)));
+                p = label.Parent.Controls.Find("messagePanel", true)[0];
+                SetActiveChat(new Chat(Program.user, new User(label.Name)));
             }
-            else if (s is Panel)
+            else if (s is Panel panel)
             {
-                p = ((Panel)s).Controls.Find("messagePanel", true)[0];
-                setActiveChat(new Chat(Program.user, new User(((Panel)s).Name)));
+                p = panel.Controls.Find("messagePanel", true)[0];
+                SetActiveChat(new Chat(Program.user, new User(panel.Name)));
             }
-            else if (s is PictureBox)
+            else if (s is PictureBox box)
             {
-                p = ((PictureBox)s).Parent.Controls.Find("messagePanel", true)[0];
-                setActiveChat(new Chat(Program.user, new User(((PictureBox)s).Name)));
+                p = box.Parent.Controls.Find("messagePanel", true)[0];
+                SetActiveChat(new Chat(Program.user, new User(box.Name)));
             }
             p.Visible = false;
             p.Controls.Find("message", true)[0].Text = "0";
-            redrawOnlineList();
-            drawChatPage();
+            RedrawOnlineList();
+            DrawChatPage();
         }
-        void drawChatPage()
+        void DrawChatPage()
         {
             TableLayoutPanel panel = new TableLayoutPanel();
             Label warninglabel = new Label();
-            var activeChat = getActiveChat();
+            var activeChat = GetActiveChat();
             #region noactivechat
             if (activeChat is null)
             {
@@ -279,14 +281,14 @@ namespace MessengerClient.Views
             else
             {
                 activeChatPage.Visible = true;
-                messages.Text = activeChat.chatHistory;
+                messages.Text = activeChat.ChatHistory;
                 ChatPage.Controls.Find("offpanel", true)[0].Visible = false;
             }
 
         }
-        Chat getChat(Chat chat)
+        Chat GetChat(Chat chat)
         {
-            var c = chats.Find(c => c.client1.username.Equals(chat.client1.username) && c.client2.username.Equals(chat.client2.username));
+            var c = chats.Find(c => c.Client1.Username.Equals(chat.Client1.Username) && c.Client2.Username.Equals(chat.Client2.Username));
             if (c is null)
             {
                 chats.Add(chat);
@@ -296,23 +298,23 @@ namespace MessengerClient.Views
         }
 
         // ToDo: Find a better way to handle active chat.
-        Chat getActiveChat()
+        Chat GetActiveChat()
         {
-            return chats.Find(c => c.isActive);
+            return chats.Find(c => c.IsActive);
         }
-        void setActiveChat(Chat chat)
+        void SetActiveChat(Chat chat)
         {
             chats.ForEach(c =>
             {
-                if (c.client1.username.Equals(chat.client1.username) && c.client2.username.Equals(chat.client2.username))
-                    c.isActive = true;
+                if (c.Client1.Username.Equals(chat.Client1.Username) && c.Client2.Username.Equals(chat.Client2.Username))
+                    c.IsActive = true;
                 else
-                    c.isActive = false;
+                    c.IsActive = false;
             });
 
         }
 
-        private void getPackage()
+        private void GetPackage()
         {
             try
             {
@@ -330,25 +332,25 @@ namespace MessengerClient.Views
                     Package pck = new Package();
                     pck = pck.Deserialize(returndata);
 
-                    switch (pck.packageType)
+                    switch (pck.PackageType)
                     {
-                        case 1:
+                        case PackageTypeEnum.NewMessage:
                             // INCOMING MESSAGE
-                            readData = pck.context;
+                            readData = pck.Context;
                             pack = pck;
-                            processMessage();
+                            ProcessMessage();
                             break;
 
-                        case 2:
+                        case PackageTypeEnum.UserConnectedDisconnected:
                             // USER CONNECTED/DISCONNECTED
-                            onlineUsers = pck.DeserializeClients(pck.context);
-                            redrawOnlineList();
+                            onlineUsers = pck.DeserializeClients(pck.Context);
+                            RedrawOnlineList();
                             break;
 
-                        case 4:
+                        case PackageTypeEnum.Fail:
                             // SEND FAILED
                             readData = "Couldn't deliver message.";
-                            processMessage();
+                            ProcessMessage();
                             break;
                     }
                 }
@@ -365,17 +367,17 @@ namespace MessengerClient.Views
 
             }
         }
-        private void processMessage()
+        private void ProcessMessage()
         {
             if (InvokeRequired)
-                Invoke(new MethodInvoker(processMessage));
+                Invoke(new MethodInvoker(ProcessMessage));
             else
             {
                 try
                 {
-                    Chat c = new Chat(pack.receiverUser, pack.senderUser);
-                    getChat(c).chatHistory += Environment.NewLine + " << " + readData;
-                    messagePopUp();
+                    Chat c = new Chat(pack.ReceiverUser, pack.SenderUser);
+                    GetChat(c).ChatHistory += Environment.NewLine + " << " + readData;
+                    MessagePopUp();
                 }
                 catch (Exception ex)
                 {
@@ -383,20 +385,20 @@ namespace MessengerClient.Views
                 }
             }
         }
-        private void messagePopUp()
+        private void MessagePopUp()
         {
             if (InvokeRequired)
-                Invoke(new MethodInvoker(messagePopUp));
+                Invoke(new MethodInvoker(MessagePopUp));
             else
             {
-                string username = pack.senderUser.username;
+                string username = pack.SenderUser.Username;
                 foreach (Control c in panel1.Controls)
                 {
-                    var activeChat = getActiveChat();
-                    if (activeChat != null && activeChat.client2 != null)
+                    var activeChat = GetActiveChat();
+                    if (activeChat != null && activeChat.Client2 != null)
                     {
-                        if (activeChat.client2.username == c.Name)
-                            redrawChatPage();
+                        if (activeChat.Client2.Username == c.Name)
+                            RedrawChatPage();
                         return;
                     }
                     if (c.Name == username)
@@ -407,61 +409,61 @@ namespace MessengerClient.Views
                 }
             }
         }
-        private void redrawOnlineList()
+        private void RedrawOnlineList()
         {
             if (InvokeRequired)
-                Invoke(new MethodInvoker(redrawOnlineList));
+                Invoke(new MethodInvoker(RedrawOnlineList));
             else
             {
                 panel1.Controls.Clear();
-                drawOnlineUsers();
+                DrawOnlineUsers();
             }
 
         }
-        private void redrawChatPage()
+        private void RedrawChatPage()
         {
             if (InvokeRequired)
-                Invoke(new MethodInvoker(redrawChatPage));
+                Invoke(new MethodInvoker(RedrawChatPage));
             else
             {
-                messages.Text = getActiveChat().chatHistory;
+                messages.Text = GetActiveChat().ChatHistory;
             }
 
         }
-        private void sendButton_Click(object sender, EventArgs e)
+        private void SendButton_Click(object sender, EventArgs e)
         {
-            var activeChat = getActiveChat();
-            Package message = new Package(messageTextBox.Text.TrimEnd(), activeChat.client1, activeChat.client2, 1);
-            message.sendPackage(serverStream);
+            var activeChat = GetActiveChat();
+            Package message = new Package(messageTextBox.Text.TrimEnd(), activeChat.Client1, activeChat.Client2, PackageTypeEnum.NewMessage);
+            message.SendPackage(serverStream);
 
             messages.AppendText(Environment.NewLine);
             messages.AppendText(String.Format(">> {0}", messageTextBox.Text));
 
-            chats[chats.FindIndex(x => x.Equals(activeChat))].chatHistory += Environment.NewLine + ">> " + messageTextBox.Text;
+            chats[chats.FindIndex(x => x.Equals(activeChat))].ChatHistory += Environment.NewLine + ">> " + messageTextBox.Text;
             messageTextBox.Clear();
         }
-        private void messages_TextChanged(object sender, EventArgs e)
+        private void Messages_TextChanged(object sender, EventArgs e)
         {
             messages.SelectionStart = messages.Text.Length;
             messages.ScrollToCaret();
         }
 
-        private void options_Click(object sender, EventArgs e)
+        private void Options_Click(object sender, EventArgs e)
         {
 
         }
 
-        private void messageTextBox_KeyDown(object sender, KeyEventArgs e)
+        private void MessageTextBox_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Enter)
                 if (!String.IsNullOrEmpty(messageTextBox.Text))
                 {
-                    sendButton_Click(sender, new EventArgs());
+                    SendButton_Click(sender, new EventArgs());
                     messageTextBox.Clear();
                 }
         }
 
-        private void messageTextBox_KeyUp(object sender, KeyEventArgs e)
+        private void MessageTextBox_KeyUp(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Enter)
                 messageTextBox.Clear();

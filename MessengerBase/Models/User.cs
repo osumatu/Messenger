@@ -5,8 +5,8 @@ namespace MessengerBase.Models
 {
     public class User
     {
-        public string username { get; set; }
-        public IPAddress ipAdress { get; set; }
+        public string Username { get; set; }
+        public IPAddress IpAdress { get; set; }
         private IPAddress GetLocalIPAddress()
         {
             var host = Dns.GetHostEntry(Dns.GetHostName());
@@ -21,8 +21,8 @@ namespace MessengerBase.Models
         }
         public User(string username)
         {
-            this.username = username;
-            ipAdress = GetLocalIPAddress();
+            this.Username = username;
+            IpAdress = GetLocalIPAddress();
         }
         public User() { }
     }
